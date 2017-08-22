@@ -38,26 +38,24 @@ void step(int cTrain, int totalTrains, int totalStations) {
     /* iterates until all trains reach destination */
     while(go) { 
         /* check if we're at the end of the route */
+        sMutex.lock();
         if((trains[cTrain].cLocation + 1) != trains[cTrain].nStops) {
             /* get the current station and the next station in the route */
             int cStation = trains[cTrain].route[trains[cTrain].cLocation];
             int nStation = trains[cTrain].route[trains[cTrain].cLocation + 1];
             /* check if that track has already been reserved by another train */
             if(schedule[nStation][cStation] == 1 && schedule[cStation][nStation] == 1) {
-                sMutex.lock();
                 std::cout << "At timestep: " << timestep << " train " << names[cTrain] << " must stay at station " << cStation << std::endl;
-                sMutex.unlock();
             }
             /* reserve that track for the train if empty and iterate to next stop */
             else { 
-                sMutex.lock();
                 schedule[nStation][cStation] = 1;
                 schedule[cStation][nStation] = 1;
                 std::cout << "At timestep: " << timestep << " train " << names[cTrain] << " is going from station " << cStation << " to station " << nStation << std::endl;
                 trains[cTrain].cLocation++;
-                sMutex.unlock();
             }
         }
+        sMutex.unlock();
         /* make sure all threads have been assigned for that timestep */
         B.barrier(totalTrains);
 
